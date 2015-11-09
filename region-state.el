@@ -1,4 +1,4 @@
-;;; region-state.el --- Displays the region state in mode-line  -*- lexical-binding: t; -*-
+;;; region-state.el --- Displays the region state in somewhere  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015  Chunyang Xu
 
@@ -26,21 +26,24 @@
 
 ;;; Code:
 
+
+;;; Variables
 (defvar region-state-string nil
   "String to display in the mode line.")
 (make-variable-buffer-local 'region-state-string)
 (put 'region-state-string 'risky-local-variable t)
 
+
+;;; Function
 (defun region-state--update ()
   (setq region-state-string
         (let* ((beg (region-beginning))
                (end (region-end))
                (chars (- end beg))
-               ;; TODO: `count-lines' looks very expensive
+               ;; NOTE: `count-lines' looks very expensive, while rewriting it
+               ;; maybe more expensive.
                (lines (count-lines beg end)))
           (concat
-           ;; TODO: Display one line when the 2nd line is "empty*, this is
-           ;; caused by `count-lines'
            (and (> lines 1) (format "%d lines, " lines))
            (and (> chars 0) (format "%d characters selected" chars))))))
 
@@ -51,6 +54,8 @@
   (remove-hook 'post-command-hook #'region-state--update t)
   (setq region-state-string nil))
 
+
+;;; Minor mode
 ;;;###autoload
 (define-minor-mode region-state-mode
   "Toggle the region state display in mode line (Region State mode).
@@ -60,7 +65,8 @@ argument disables it.  From Lisp, argument omitted or nil enables
 the mode, `toggle' toggles the state."
   :global t
   ;; TODO: Try to put this to the beginning of mode-line like anzu or
-  ;; header-line, anyway, make it clear as can as possible by default
+  ;; header-line or echo area , anyway, make it clear as can as possible by
+  ;; default
   (or global-mode-string (setq global-mode-string '("")))
   (if region-state-mode
       (progn
