@@ -33,8 +33,16 @@
 
 (defun region-state--update ()
   (setq region-state-string
-        ;; TODO: Make more meaningful summery on what's selected
-        (format "%-3d Marked" (- (region-end) (region-beginning)))))
+        (let* ((beg (region-beginning))
+               (end (region-end))
+               (chars (- end beg))
+               ;; TODO: `count-lines' looks very expensive
+               (lines (count-lines beg end)))
+          (concat
+           ;; TODO: Display one line when the 2nd line is "empty*, this is
+           ;; caused by `count-lines'
+           (and (> lines 1) (format "%d lines, " lines))
+           (and (> chars 0) (format "%d characters selected" chars))))))
 
 (defun region-state--activate ()
   (add-hook 'post-command-hook #'region-state--update t t))
@@ -51,6 +59,8 @@ A positive prefix argument enables the mode, any other prefix
 argument disables it.  From Lisp, argument omitted or nil enables
 the mode, `toggle' toggles the state."
   :global t
+  ;; TODO: Try to put this to the beginning of mode-line like anzu or
+  ;; header-line, anyway, make it clear as can as possible by default
   (or global-mode-string (setq global-mode-string '("")))
   (if region-state-mode
       (progn
