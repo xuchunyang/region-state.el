@@ -27,7 +27,6 @@
 
 ;; TODO: Allow customization:
 ;;
-;; 1. Display string
 ;; 2. Display place
 
 ;;; Code:
@@ -50,6 +49,23 @@ buffer-local wherever it is set."
             (list 'make-variable-buffer-local (list 'quote var))))))
 
 
+;;; Customization
+(defgroup region-state nil
+  "Displays the Region state somewhere"
+  :prefix "region-state-"
+  ;; Parent group, any better choice?
+  :group 'emacs)
+
+(defcustom region-state-format-function #'region-state-format-default
+  "Function to use for constructing `region-state-string'.
+Called with two arguments: (BEG END)
+BEG is the beginning of the region.
+END is the end of the region."
+  :type 'function
+  :group 'region-state)
+
+;; Maybe also add `region-state-update-hook'
+
 ;;; Variables
 (defvar-local region-state-string nil
   "Description of the region.")
@@ -62,6 +78,25 @@ buffer-local wherever it is set."
 
 
 ;;; Function
+(defun region-state-format-default (beg end)
+  (if (not rectangle-mark-mode)
+      (let ((chars (- end beg))
+            (lines (count-lines beg end)))
+        (setq region-state-string
+              (concat
+               (and (> lines 1) (format "%d lines, " lines))
+               (and (> chars 0) (format "%d characters selected" chars)))))
+    ;; FIXME: Handle beg > end
+    (let* ((col (save-excursion (rectangle--pos-cols beg end)))
+           (startcol (car col))
+           (endcol (cdr col))
+           (cols (- endcol startcol))
+           ;; FIXME: Can't handle empty line somethmes, count myself
+           ;; maybe by using `apply-on-rectangle'
+           (rows (count-lines beg end)))
+      (setq region-state-string
+            (format "(%d, %d) rectangle selected"  cols rows)))))
+
 (defun region-state--update ()
   (let ((beg (region-beginning))
         (end (region-end)))
@@ -75,22 +110,7 @@ buffer-local wherever it is set."
                 (and (= beg region-state-last-ending)
                      (= end region-state-last-beginning)))
       ;; (message "[region-state]: updating...")
-      (if (not rectangle-mark-mode)
-          (let ((chars (- end beg))
-                (lines (count-lines beg end)))
-            (setq region-state-string
-                  (concat
-                   (and (> lines 1) (format "%d lines, " lines))
-                   (and (> chars 0) (format "%d characters selected" chars)))))
-        (let* ((col (save-excursion (rectangle--pos-cols beg end)))
-               (startcol (car col))
-               (endcol (cdr col))
-               (cols (- endcol startcol))
-               ;; FIXME: Can't handle empty line somethmes, count myself
-               ;; maybe by using `apply-on-rectangle'
-               (rows (count-lines beg end)))
-          (setq region-state-string
-                (format "(%d, %d) rectangle selected"  cols rows))))
+      (funcall region-state-format-function beg end)
       (setq region-state-last-beginning beg
             region-state-last-ending end))))
 
