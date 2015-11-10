@@ -22,8 +22,15 @@
 ;;; Commentary:
 
 ;; This is a global minor-mode. Turn it on everywhere with:
+;; ┌────
+;; │ (region-state-mode 1)
+;; └────
 ;;
-;;   (region-state-mode 1)
+;; What's in your region? This package is for the question.
+;;
+;; That’s it.
+;;
+;; See the accompanying README.org for configuration details.
 
 ;;; Code:
 
