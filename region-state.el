@@ -31,6 +31,8 @@
 
 ;;; Code:
 
+(eval-when-compile (require 'rect))
+(declare-function rectangle--pos-cols 'rect)
 
 ;;; Variables
 (defvar region-state-string nil
