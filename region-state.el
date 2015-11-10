@@ -51,7 +51,7 @@ buffer-local wherever it is set."
 
 ;;; Variables
 (defvar-local region-state-string nil
-  "String to display the region state somewhere.")
+  "Description of the region.")
 (put 'region-state-string 'risky-local-variable t)
 
 (defvar-local region-state-last-beginning 0
