@@ -40,23 +40,24 @@
 
 
 ;;; Function
-;; TODO: Support Rectangle
 (defun region-state--update ()
   ;; NOTE: Recompute after every commmand, add a predication for this when
   ;; necessary
   (setq region-state-string
-        (let* ((beg (region-beginning))
-               (end (region-end))
-               (chars (- end beg))
-               ;; NOTE: `count-lines' looks very expensive, while rewriting it
-               ;; maybe more expensive.
-               (lines (count-lines beg end)))
-          ;; For debugging
-          ;; (message "[region-state] %d-%d, %d chars, %d line"
-          ;;          beg end chars lines)
-          (concat
-           (and (> lines 1) (format "%d lines, " lines))
-           (and (> chars 0) (format "%d characters selected" chars))))))
+        (let ((beg (region-beginning))
+              (end (region-end)))
+          (if (not rectangle-mark-mode)
+              (let ((chars (- end beg))
+                    (lines (count-lines beg end)))
+                (concat
+                 (and (> lines 1) (format "%d lines, " lines))
+                 (and (> chars 0) (format "%d characters selected" chars))))
+            (let* ((col (save-excursion (rectangle--pos-cols beg end)))
+                   (startcol (car col))
+                   (endcol (cdr col))
+                   (cols (- endcol startcol))
+                   (rows (count-lines beg end)))
+              (format "(%d, %d) rectangle selected"  cols rows))))))
 
 (defun region-state--activate ()
   (add-hook 'post-command-hook #'region-state--update t t))
