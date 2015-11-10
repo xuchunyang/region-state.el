@@ -1,4 +1,4 @@
-;;; region-state.el --- Displays the Region state in somewhere  -*- lexical-binding: t; -*-
+;;; region-state.el --- Displays the Region state somewhere  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015  Chunyang Xu
 
@@ -51,7 +51,7 @@ buffer-local wherever it is set."
 
 ;;; Variables
 (defvar-local region-state-string nil
-  "String to display the region state in somewhere.")
+  "String to display the region state somewhere.")
 (put 'region-state-string 'risky-local-variable t)
 
 (defvar-local region-state-last-beginning 0
