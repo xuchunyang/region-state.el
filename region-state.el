@@ -24,6 +24,11 @@
 ;;
 ;;   (region-state-mode 1)
 
+;; TODO: Allow customization:
+;;
+;; 1. Display string
+;; 2. Display place
+
 ;;; Code:
 
 
@@ -35,7 +40,10 @@
 
 
 ;;; Function
+;; TODO: Support Rectangle
 (defun region-state--update ()
+  ;; NOTE: Recompute after every commmand, add a predication for this when
+  ;; necessary
   (setq region-state-string
         (let* ((beg (region-beginning))
                (end (region-end))
@@ -43,6 +51,9 @@
                ;; NOTE: `count-lines' looks very expensive, while rewriting it
                ;; maybe more expensive.
                (lines (count-lines beg end)))
+          ;; For debugging
+          ;; (message "[region-state] %d-%d, %d chars, %d line"
+          ;;          beg end chars lines)
           (concat
            (and (> lines 1) (format "%d lines, " lines))
            (and (> chars 0) (format "%d characters selected" chars))))))
@@ -58,7 +69,7 @@
 ;;; Minor mode
 ;;;###autoload
 (define-minor-mode region-state-mode
-  "Toggle Region State mode.
+  "Toggle the display of the region.
 Interactively with no argument, this command toggles the mode.
 A positive prefix argument enables the mode, any other prefix
 argument disables it.  From Lisp, argument omitted or nil enables
