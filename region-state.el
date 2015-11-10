@@ -1,9 +1,9 @@
-;;; region-state.el --- Displays the region state in somewhere  -*- lexical-binding: t; -*-
+;;; region-state.el --- Displays the Region state in somewhere  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015  Chunyang Xu
 
 ;; Author: Chunyang Xu <xuchunyang56@gmail.com>
-;; Keywords: convenience, mode-line
+;; Keywords: convenience
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 ;;; Variables
 (defvar region-state-string nil
-  "String to display in the mode line.")
+  "String to display the region state in somewhere.")
 (make-variable-buffer-local 'region-state-string)
 (put 'region-state-string 'risky-local-variable t)
 
@@ -58,7 +58,7 @@
 ;;; Minor mode
 ;;;###autoload
 (define-minor-mode region-state-mode
-  "Toggle the region state display in mode line (Region State mode).
+  "Toggle Region State mode.
 Interactively with no argument, this command toggles the mode.
 A positive prefix argument enables the mode, any other prefix
 argument disables it.  From Lisp, argument omitted or nil enables
