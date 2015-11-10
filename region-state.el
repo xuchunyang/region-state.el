@@ -33,19 +33,31 @@
 
 (eval-when-compile (require 'rect))
 (declare-function rectangle--pos-cols 'rect)
+
+
+;;; Compatibility
+(eval-and-compile
+  (unless (macrop 'defvar-local)
+    ;; `defvar-local' for Emacs 24.2 and below
+    (defmacro defvar-local (var val &optional docstring)
+      "Define VAR as a buffer-local variable with default value VAL.
+Like `defvar' but additionally marks the variable as being automatically
+buffer-local wherever it is set."
+      (declare (debug defvar) (doc-string 3))
+      ;; Can't use backquote here, it's too early in the bootstrap.
+      (list 'progn (list 'defvar var val docstring)
+            (list 'make-variable-buffer-local (list 'quote var))))))
+
 
 ;;; Variables
-(defvar region-state-string nil
+(defvar-local region-state-string nil
   "String to display the region state in somewhere.")
-(make-variable-buffer-local 'region-state-string)
 (put 'region-state-string 'risky-local-variable t)
 
-(defvar region-state-last-beginning 0
+(defvar-local region-state-last-beginning 0
   "Beginning position of the last region.")
-(make-variable-buffer-local 'region-state-last-beginning)
-(defvar region-state-last-ending 0
+(defvar-local region-state-last-ending 0
   "Ending position of the last region.")
-(make-variable-buffer-local 'region-state-last-ending)
 
 
 ;;; Function
