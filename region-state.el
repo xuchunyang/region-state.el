@@ -40,33 +40,55 @@
 (make-variable-buffer-local 'region-state-string)
 (put 'region-state-string 'risky-local-variable t)
 
+(defvar region-state-last-beginning 0
+  "Beginning position of the last region.")
+(make-variable-buffer-local 'region-state-last-beginning)
+(defvar region-state-last-ending 0
+  "Ending position of the last region.")
+(make-variable-buffer-local 'region-state-last-ending)
+
 
 ;;; Function
 (defun region-state--update ()
-  ;; NOTE: Recompute after every commmand, add a predication for this when
-  ;; necessary
-  (setq region-state-string
-        (let ((beg (region-beginning))
-              (end (region-end)))
-          (if (not rectangle-mark-mode)
-              (let ((chars (- end beg))
-                    (lines (count-lines beg end)))
-                (concat
-                 (and (> lines 1) (format "%d lines, " lines))
-                 (and (> chars 0) (format "%d characters selected" chars))))
-            (let* ((col (save-excursion (rectangle--pos-cols beg end)))
-                   (startcol (car col))
-                   (endcol (cdr col))
-                   (cols (- endcol startcol))
-                   (rows (count-lines beg end)))
-              (format "(%d, %d) rectangle selected"  cols rows))))))
+  (let ((beg (region-beginning))
+        (end (region-end)))
+    ;; Debug
+    ;; (message "[region-state]: maybe update on region (%d, %d) -> (%d, %d)"
+    ;;          region-state-last-beginning region-state-last-ending
+    ;;          beg end)
+    ;; Recompute only if the region actually is changed
+    (unless (or (and (= beg region-state-last-beginning)
+                     (= end region-state-last-ending))
+                (and (= beg region-state-last-ending)
+                     (= end region-state-last-beginning)))
+      ;; (message "[region-state]: updating...")
+      (if (not rectangle-mark-mode)
+          (let ((chars (- end beg))
+                (lines (count-lines beg end)))
+            (setq region-state-string
+                  (concat
+                   (and (> lines 1) (format "%d lines, " lines))
+                   (and (> chars 0) (format "%d characters selected" chars)))))
+        (let* ((col (save-excursion (rectangle--pos-cols beg end)))
+               (startcol (car col))
+               (endcol (cdr col))
+               (cols (- endcol startcol))
+               ;; FIXME: Can't handle empty line somethmes, count myself
+               ;; maybe by using `apply-on-rectangle'
+               (rows (count-lines beg end)))
+          (setq region-state-string
+                (format "(%d, %d) rectangle selected"  cols rows))))
+      (setq region-state-last-beginning beg
+            region-state-last-ending end))))
 
 (defun region-state--activate ()
   (add-hook 'post-command-hook #'region-state--update t t))
 
 (defun region-state--deactivate ()
   (remove-hook 'post-command-hook #'region-state--update t)
-  (setq region-state-string nil))
+  (setq region-state-string nil)
+  (setq region-state-last-beginning 0
+        region-state-last-ending 0))
 
 
 ;;; Minor mode
