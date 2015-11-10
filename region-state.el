@@ -25,10 +25,6 @@
 ;;
 ;;   (region-state-mode 1)
 
-;; TODO: Allow customization:
-;;
-;; 2. Display place
-
 ;;; Code:
 
 (eval-when-compile (require 'rect))
@@ -64,15 +60,31 @@ END is the end of the region."
   :type 'function
   :group 'region-state)
 
-;; Maybe also add `region-state-update-hook'
+(defcustom region-state-display-place 'echo-area
+  "Where to display `region-state-string'."
+  :type '(radio (const :tag "Display in the Echo Area" echo-area)
+                (const :tag "Display in the Mode Line" mode-line)
+                (const :tag "Display in the Header line" header-line)
+                (const :tag "Don't use any of above built-in solutions" nil))
+  :set (lambda (var-name value)
+         (let ((on (bound-and-true-p region-state-mode)))
+           (when on (region-state-mode -1))
+           (set var-name value)
+           (when on (region-state-mode 1))))
+  :group 'region-state)
+
 
 ;;; Variables
 (defvar-local region-state-string nil
   "Description of the region.")
 (put 'region-state-string 'risky-local-variable t)
 
+(defvar region-state-after-update-hook nil
+  "Run by `region-state--update', after `region-state-string' is updated.")
+
 (defvar-local region-state-last-beginning 0
   "Beginning position of the last region.")
+
 (defvar-local region-state-last-ending 0
   "Ending position of the last region.")
 
@@ -108,20 +120,52 @@ END is the end of the region."
     (unless (or (and (= beg region-state-last-beginning)
                      (= end region-state-last-ending))
                 (and (= beg region-state-last-ending)
-                     (= end region-state-last-beginning)))
+                     (= end region-state-last-beginning))
+                ;; TODO: Also update after C-x SPC
+                ;; (eq this-command 'rectangle-mark-mode)
+                )
+      ;; Debug
       ;; (message "[region-state]: updating...")
       (funcall region-state-format-function beg end)
+      (run-hooks 'region-state-after-update-hook)
       (setq region-state-last-beginning beg
             region-state-last-ending end))))
 
+(defvar-local region-state--default-header-line nil)
+(defvar-local region-state--header-line-changed nil)
+
 (defun region-state--activate ()
-  (add-hook 'post-command-hook #'region-state--update t t))
+  (add-hook 'post-command-hook #'region-state--update t t)
+  (when (eq region-state-display-place 'header-line)
+    (setq region-state--default-header-line header-line-format
+          header-line-format '(region-state-mode ("" region-state-string " "))
+          region-state--header-line-changed t)))
 
 (defun region-state--deactivate ()
   (remove-hook 'post-command-hook #'region-state--update t)
   (setq region-state-string nil)
   (setq region-state-last-beginning 0
-        region-state-last-ending 0))
+        region-state-last-ending 0)
+  (when region-state--header-line-changed
+    (setq header-line-format region-state--default-header-line
+          region-state--header-line-changed nil)))
+
+(defun region-state--display-in-echo-area ()
+  (message "%s" region-state-string))
+
+(defun region-state-mode--reset ()
+  "Initialize or clean up `region-state-mode'.
+Run at the start of `region-state-mode'."
+  (cond ((eq region-state-display-place 'mode-line)
+         (or global-mode-string (setq global-mode-string '("")))
+         (if region-state-mode
+             (add-to-list 'global-mode-string 'region-state-string t)
+           (setq global-mode-string
+                 (delq 'region-state-string global-mode-string))))
+        ((eq region-state-display-place 'echo-area)
+         (if region-state-mode
+             (add-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)
+           (remove-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)))))
 
 
 ;;; Minor mode
@@ -133,17 +177,11 @@ A positive prefix argument enables the mode, any other prefix
 argument disables it.  From Lisp, argument omitted or nil enables
 the mode, `toggle' toggles the state."
   :global t
-  ;; TODO: Try to put this to the beginning of mode-line like anzu or
-  ;; header-line or echo area , anyway, make it clear as can as possible by
-  ;; default
-  (or global-mode-string (setq global-mode-string '("")))
+  (region-state-mode--reset)
   (if region-state-mode
       (progn
-        (add-to-list 'global-mode-string 'region-state-string t)
         (add-hook 'activate-mark-hook #'region-state--activate)
         (add-hook 'deactivate-mark-hook #'region-state--deactivate))
-    (setq global-mode-string
-          (delq 'region-state-string global-mode-string))
     (add-hook 'activate-mark-hook #'region-state--activate)
     (add-hook 'deactivate-mark-hook #'region-state--deactivate)))
 
