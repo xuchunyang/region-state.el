@@ -103,7 +103,8 @@ buffer-local wherever it is set."
            ;; TODO: Maybe need some special care for the first selected line
            (when (> region-state-lines 1)
              (format "%d lines, " region-state-lines))
-           (format "%d characters selected" region-state-chars)))))
+           (when(> region-state-chars 0)
+             (format "%d characters selected" region-state-chars))))))
 
 (defun region-state--update-1 (beg end)
   (if (not rectangle-mark-mode)
