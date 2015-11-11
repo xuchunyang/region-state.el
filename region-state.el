@@ -71,34 +71,54 @@ buffer-local wherever it is set."
   "Description of the region.")
 (put 'region-state-string 'risky-local-variable t)
 
-(defvar region-state-after-update-hook nil
-  "Run by `region-state--update', after `region-state-string' is updated.")
+(defvar-local region-state-lines 0
+  "The number of lines in the region.")
+(defvar-local region-state-chars 0
+  "The number of characters in the region.")
+
+(defvar-local region-state-rows 0
+  "The number of rows in the rectangle.")
+(defvar-local region-state-cols 0
+  "The number of colums in the rectangle.")
 
 (defvar-local region-state-last-beginning 0
   "Beginning position of the last region.")
-
 (defvar-local region-state-last-ending 0
   "Ending position of the last region.")
 
+(defvar region-state-after-update-hook nil
+  "Run by `region-state--update', after `region-state-string' is updated.")
+
 
 ;;; Function
-(defun region-state-format (beg end)
+
+(defun region-state--format ()
+  "Build `region-state-string'."
+  (setq region-state-string
+        (if rectangle-mark-mode
+            (format "%d rows, %d columns rectangle selected"
+                    region-state-rows
+                    region-state-cols)
+          (concat
+           ;; TODO: Maybe need some special care for the first selected line
+           (when (> region-state-lines 1)
+             (format "%d lines, " region-state-lines))
+           (format "%d characters selected" region-state-chars)))))
+
+(defun region-state--update-1 (beg end)
   (if (not rectangle-mark-mode)
       (let ((chars (- end beg))
             (lines (count-lines beg end)))
-        (setq region-state-string
-              (concat
-               ;; Maybe need some special care for the first selected line
-               (and (> lines 1) (format "%d lines, " lines))
-               (and (> chars 0) (format "%d characters selected" chars)))))
+        (setq region-state-chars chars
+              region-state-lines lines))
     (let ((rows 0)
-          (columns 0))
+          (cols 0))
       (apply-on-rectangle (lambda (startcol endcol)
                             (setq rows (1+ rows))
-                            (setq columns (- endcol startcol)))
+                            (setq cols (- endcol startcol)))
                           beg end)
-      (setq region-state-string
-            (format "%d rows, %d columns rectangle selected" rows columns)))))
+      (setq region-state-rows rows
+            region-state-cols cols))))
 
 (defun region-state--update ()
   (let ((beg (region-beginning))
@@ -108,7 +128,8 @@ buffer-local wherever it is set."
               (eq this-command 'exchange-point-and-mark)
               (not (and (= beg region-state-last-beginning)
                         (= end region-state-last-ending))))
-      (region-state-format beg end)
+      (region-state--update-1 beg end)
+      (region-state--format)
       (run-hooks 'region-state-after-update-hook)
       (setq region-state-last-beginning beg
             region-state-last-ending end))))
