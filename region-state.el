@@ -147,8 +147,10 @@ buffer-local wherever it is set."
 (defun region-state--display-in-echo-area ()
   ;; TODO: (low priority) Use mode-line to display if in minibuffer like el-doc
   (unless (region-state--minibuffer-window-selected-p)
-    (let (message-log-max)
-      (message "%s" region-state-string))))
+    (when (and region-state-string
+               (not (string= region-state-string "")))
+      (let (message-log-max)
+        (message "%s" region-state-string)))))
 
 
 ;;; Minor mode
