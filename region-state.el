@@ -36,7 +36,7 @@
 ;;; Code:
 
 (eval-when-compile (require 'rect))
-(declare-function rectangle--pos-cols 'rect)
+(declare-function apply-on-rectangle 'rect)
 
 
 ;;; Compatibility
@@ -88,36 +88,26 @@ buffer-local wherever it is set."
             (lines (count-lines beg end)))
         (setq region-state-string
               (concat
+               ;; Maybe need some special care for the first selected line
                (and (> lines 1) (format "%d lines, " lines))
                (and (> chars 0) (format "%d characters selected" chars)))))
-    ;; FIXME: Handle beg > end
-    (let* ((col (save-excursion (rectangle--pos-cols beg end)))
-           (startcol (car col))
-           (endcol (cdr col))
-           (cols (- endcol startcol))
-           ;; FIXME: Can't handle empty line somethmes, count myself
-           ;; maybe by using `apply-on-rectangle'
-           (rows (count-lines beg end)))
+    (let ((rows 0)
+          (columns 0))
+      (apply-on-rectangle (lambda (startcol endcol)
+                            (setq rows (1+ rows))
+                            (setq columns (- endcol startcol)))
+                          beg end)
       (setq region-state-string
-            (format "[%d, %d] rectangle selected"  cols rows)))))
+            (format "%d rows, %d columns rectangle selected" rows columns)))))
 
 (defun region-state--update ()
   (let ((beg (region-beginning))
         (end (region-end)))
-    ;; Debug
-    ;; (message "[region-state]: maybe update on region (%d, %d) -> (%d, %d)"
-    ;;          region-state-last-beginning region-state-last-ending
-    ;;          beg end)
-    ;; Recompute only if the region actually is changed
-    (unless (or (and (= beg region-state-last-beginning)
-                     (= end region-state-last-ending))
-                (and (= beg region-state-last-ending)
-                     (= end region-state-last-beginning))
-                ;; TODO: Also update after C-x SPC
-                ;; (eq this-command 'rectangle-mark-mode)
-                )
-      ;; Debug
-      ;; (message "[region-state]: updating...")
+    (when (or (eq this-command 'rectangle-mark-mode)
+              ;; For side effect only
+              (eq this-command 'exchange-point-and-mark)
+              (not (and (= beg region-state-last-beginning)
+                        (= end region-state-last-ending))))
       (region-state-format beg end)
       (run-hooks 'region-state-after-update-hook)
       (setq region-state-last-beginning beg
