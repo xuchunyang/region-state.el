@@ -127,6 +127,7 @@ buffer-local wherever it is set."
     (when (or (eq this-command 'rectangle-mark-mode)
               ;; For side effect only
               (eq this-command 'exchange-point-and-mark)
+              (eq this-command 'rectangle-exchange-point-and-mark)
               (not (and (= beg region-state-last-beginning)
                         (= end region-state-last-ending))))
       (region-state--update-1 beg end)
