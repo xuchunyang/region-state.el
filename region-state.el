@@ -146,22 +146,35 @@ END is the end of the region."
 
 (defvar-local region-state--default-header-line nil)
 (defvar-local region-state--header-line-changed nil)
+(defvar-local region-state--mode-line-changed nil)
+
+(defconst region-state--mode-line-format '(:eval region-state-string))
 
 (defun region-state--activate ()
   (add-hook 'post-command-hook #'region-state--update t t)
+  ;; Set up header line
   (when (eq region-state-display-place 'header-line)
     (setq region-state--default-header-line header-line-format
           header-line-format '(region-state-mode ("" region-state-string " "))
-          region-state--header-line-changed t)))
+          region-state--header-line-changed t))
+  ;; Set up mode line
+  (when (eq region-state-display-place 'mode-line)
+    (setq mode-line-format (cons region-state--mode-line-format mode-line-format)
+          region-state--mode-line-changed t)))
 
 (defun region-state--deactivate ()
   (remove-hook 'post-command-hook #'region-state--update t)
   (setq region-state-string nil)
   (setq region-state-last-beginning 0
         region-state-last-ending 0)
+  ;; Clean up header line
   (when region-state--header-line-changed
     (setq header-line-format region-state--default-header-line
-          region-state--header-line-changed nil)))
+          region-state--header-line-changed nil))
+  ;; Clean up mode line
+  (when region-state--mode-line-changed
+    (setq mode-line-format (delete region-state--mode-line-format mode-line-format)
+          region-state--mode-line-changed nil)))
 
 (defun region-state--display-in-echo-area ()
   ;; TODO: (low priority) Use mode-line to display if in minibuffer like el-doc
@@ -172,16 +185,11 @@ END is the end of the region."
 (defun region-state-mode--reset ()
   "Initialize or clean up `region-state-mode'.
 Run at the start of `region-state-mode'."
-  (cond ((eq region-state-display-place 'mode-line)
-         (or global-mode-string (setq global-mode-string '("")))
-         (if region-state-mode
-             (add-to-list 'global-mode-string 'region-state-string t)
-           (setq global-mode-string
-                 (delq 'region-state-string global-mode-string))))
-        ((eq region-state-display-place 'echo-area)
-         (if region-state-mode
-             (add-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)
-           (remove-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)))))
+  (cond
+   ((eq region-state-display-place 'echo-area)
+    (if region-state-mode
+        (add-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)
+      (remove-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)))))
 
 
 ;;; Minor mode
