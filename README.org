@@ -2,23 +2,13 @@
 
 ** Introduction
 
-   A minor-mode that displays some summary about your current region (that is,
-   selection).
+   A global minor-mode that shows the number of chars/lines or rows/columns in
+   the region (aka. selection).
 
 ** Screenshot
 
-   [[./img/echo-area-aac8875.gif]]
+   [[./img/screenshot-2015-11-22-12f1e4e.gif]]
 
 ** Usage
 
    =M-x region-state-mode=
-
-** Customization
-
-*** =region-state-display-place= (Default is =echo-area=)
-
-    Other two built-in options are =header-line= and =mode-line=:
-
-    [[./img/header-line-aac8875.png]]
-
-    [[./img/mode-line-aac8875.png]]

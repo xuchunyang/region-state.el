@@ -1,4 +1,4 @@
-;;; region-state.el --- Displays the Region state somewhere  -*- lexical-binding: t; -*-
+;;; region-state.el --- Show the number of chars/lines or rows/columns in the region  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015  Chunyang Xu
 
@@ -26,8 +26,6 @@
 ;; ┌────
 ;; │ (region-state-mode 1)
 ;; └────
-;;
-;; What's in your region? This package is for the question.
 ;;
 ;; That’s it.
 ;;
@@ -61,7 +59,7 @@ buffer-local wherever it is set."
 
 ;;; Customization
 (defgroup region-state nil
-  "Displays the Region state somewhere"
+  "Show the region (aka. selection) state"
   :prefix "region-state-"
   :group 'convenience)
 
@@ -157,7 +155,7 @@ buffer-local wherever it is set."
 ;;; Minor mode
 ;;;###autoload
 (define-minor-mode region-state-mode
-  "Toggle the display of the region.
+  "Toggle show the region (aka. selection) state.
 Interactively with no argument, this command toggles the mode.
 A positive prefix argument enables the mode, any other prefix
 argument disables it.  From Lisp, argument omitted or nil enables
