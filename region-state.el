@@ -158,7 +158,8 @@ END is the end of the region."
           region-state--header-line-changed nil)))
 
 (defun region-state--display-in-echo-area ()
-  (message "%s" region-state-string))
+  (let (message-log-max)
+    (message "%s" region-state-string)))
 
 (defun region-state-mode--reset ()
   "Initialize or clean up `region-state-mode'.
