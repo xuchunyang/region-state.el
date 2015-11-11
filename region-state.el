@@ -114,7 +114,7 @@ END is the end of the region."
            ;; maybe by using `apply-on-rectangle'
            (rows (count-lines beg end)))
       (setq region-state-string
-            (format "(%d, %d) rectangle selected"  cols rows)))))
+            (format "[%d, %d] rectangle selected"  cols rows)))))
 
 (defun region-state--update ()
   (let ((beg (region-beginning))
