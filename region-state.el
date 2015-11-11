@@ -65,27 +65,6 @@ buffer-local wherever it is set."
   :prefix "region-state-"
   :group 'convenience)
 
-(defcustom region-state-format-function #'region-state-format-default
-  "Function to use for constructing `region-state-string'.
-Called with two arguments: (BEG END)
-BEG is the beginning of the region.
-END is the end of the region."
-  :type 'function
-  :group 'region-state)
-
-(defcustom region-state-display-place 'echo-area
-  "Where to display `region-state-string'."
-  :type '(radio (const :tag "Display in the Echo Area" echo-area)
-                (const :tag "Display in the Mode Line" mode-line)
-                (const :tag "Display in the Header line" header-line)
-                (const :tag "Don't use any of above built-in solutions" nil))
-  :set (lambda (var-name value)
-         (let ((on (bound-and-true-p region-state-mode)))
-           (when on (region-state-mode -1))
-           (set var-name value)
-           (when on (region-state-mode 1))))
-  :group 'region-state)
-
 
 ;;; Variables
 (defvar-local region-state-string nil
@@ -103,7 +82,7 @@ END is the end of the region."
 
 
 ;;; Function
-(defun region-state-format-default (beg end)
+(defun region-state-format (beg end)
   (if (not rectangle-mark-mode)
       (let ((chars (- end beg))
             (lines (count-lines beg end)))
@@ -139,57 +118,25 @@ END is the end of the region."
                 )
       ;; Debug
       ;; (message "[region-state]: updating...")
-      (funcall region-state-format-function beg end)
+      (region-state-format beg end)
       (run-hooks 'region-state-after-update-hook)
       (setq region-state-last-beginning beg
             region-state-last-ending end))))
 
-(defvar-local region-state--default-header-line nil)
-(defvar-local region-state--header-line-changed nil)
-(defvar-local region-state--mode-line-changed nil)
-
-(defconst region-state--mode-line-format '(:eval region-state-string))
-
 (defun region-state--activate ()
-  (add-hook 'post-command-hook #'region-state--update t t)
-  ;; Set up header line
-  (when (eq region-state-display-place 'header-line)
-    (setq region-state--default-header-line header-line-format
-          header-line-format '(region-state-mode ("" region-state-string " "))
-          region-state--header-line-changed t))
-  ;; Set up mode line
-  (when (eq region-state-display-place 'mode-line)
-    (setq mode-line-format (cons region-state--mode-line-format mode-line-format)
-          region-state--mode-line-changed t)))
+  (add-hook 'post-command-hook #'region-state--update t t))
 
 (defun region-state--deactivate ()
   (remove-hook 'post-command-hook #'region-state--update t)
   (setq region-state-string nil)
   (setq region-state-last-beginning 0
-        region-state-last-ending 0)
-  ;; Clean up header line
-  (when region-state--header-line-changed
-    (setq header-line-format region-state--default-header-line
-          region-state--header-line-changed nil))
-  ;; Clean up mode line
-  (when region-state--mode-line-changed
-    (setq mode-line-format (delete region-state--mode-line-format mode-line-format)
-          region-state--mode-line-changed nil)))
+        region-state-last-ending 0))
 
 (defun region-state--display-in-echo-area ()
   ;; TODO: (low priority) Use mode-line to display if in minibuffer like el-doc
   (unless (region-state--minibuffer-window-selected-p)
     (let (message-log-max)
       (message "%s" region-state-string))))
-
-(defun region-state-mode--reset ()
-  "Initialize or clean up `region-state-mode'.
-Run at the start of `region-state-mode'."
-  (cond
-   ((eq region-state-display-place 'echo-area)
-    (if region-state-mode
-        (add-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)
-      (remove-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)))))
 
 
 ;;; Minor mode
@@ -201,13 +148,14 @@ A positive prefix argument enables the mode, any other prefix
 argument disables it.  From Lisp, argument omitted or nil enables
 the mode, `toggle' toggles the state."
   :global t
-  (region-state-mode--reset)
   (if region-state-mode
       (progn
         (add-hook 'activate-mark-hook #'region-state--activate)
-        (add-hook 'deactivate-mark-hook #'region-state--deactivate))
+        (add-hook 'deactivate-mark-hook #'region-state--deactivate)
+        (add-hook 'region-state-after-update-hook #'region-state--display-in-echo-area))
     (remove-hook 'activate-mark-hook #'region-state--activate)
-    (remove-hook 'deactivate-mark-hook #'region-state--deactivate)))
+    (remove-hook 'deactivate-mark-hook #'region-state--deactivate)
+    (remove-hook 'region-state-after-update-hook #'region-state--display-in-echo-area)))
 
 (provide 'region-state)
 ;;; region-state.el ends here
