@@ -63,8 +63,7 @@ buffer-local wherever it is set."
 (defgroup region-state nil
   "Displays the Region state somewhere"
   :prefix "region-state-"
-  ;; Parent group, any better choice?
-  :group 'emacs)
+  :group 'convenience)
 
 (defcustom region-state-format-function #'region-state-format-default
   "Function to use for constructing `region-state-string'.
