@@ -39,7 +39,7 @@
 
 ;;; Compatibility
 (eval-and-compile
-  (unless (macrop 'defvar-local)
+  (unless (fboundp 'defvar-local)
     ;; `defvar-local' for Emacs 24.2 and below
     (defmacro defvar-local (var val &optional docstring)
       "Define VAR as a buffer-local variable with default value VAL.
@@ -93,7 +93,7 @@ buffer-local wherever it is set."
 (defun region-state--format ()
   "Build `region-state-string'."
   (setq region-state-string
-        (if rectangle-mark-mode
+        (if (bound-and-true-p rectangle-mark-mode)
             (format "%d rows, %d columns rectangle selected"
                     region-state-rows
                     region-state-cols)
@@ -105,7 +105,7 @@ buffer-local wherever it is set."
              (format "%d characters selected" region-state-chars))))))
 
 (defun region-state--update-1 (beg end)
-  (if (not rectangle-mark-mode)
+  (if (not (bound-and-true-p rectangle-mark-mode))
       (let ((chars (- end beg))
             (lines (count-lines beg end)))
         (setq region-state-chars chars
