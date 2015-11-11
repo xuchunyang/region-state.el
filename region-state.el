@@ -52,6 +52,12 @@ buffer-local wherever it is set."
             (list 'make-variable-buffer-local (list 'quote var))))))
 
 
+;;; Utility
+(defun region-state--minibuffer-window-selected-p ()
+  "Return t if minibuffer window is selected."
+  (minibuffer-window-active-p (selected-window)))
+
+
 ;;; Customization
 (defgroup region-state nil
   "Displays the Region state somewhere"
@@ -158,8 +164,10 @@ END is the end of the region."
           region-state--header-line-changed nil)))
 
 (defun region-state--display-in-echo-area ()
-  (let (message-log-max)
-    (message "%s" region-state-string)))
+  ;; TODO: (low priority) Use mode-line to display if in minibuffer like el-doc
+  (unless (region-state--minibuffer-window-selected-p)
+    (let (message-log-max)
+      (message "%s" region-state-string))))
 
 (defun region-state-mode--reset ()
   "Initialize or clean up `region-state-mode'.
