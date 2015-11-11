@@ -3,6 +3,7 @@
 ;; Copyright (C) 2015  Chunyang Xu
 
 ;; Author: Chunyang Xu <xuchunyang56@gmail.com>
+;; URL: https://github.com/xuchunyang/region-state.el
 ;; Keywords: convenience
 ;; Version: 0.1
 
