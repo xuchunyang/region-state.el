@@ -206,8 +206,8 @@ the mode, `toggle' toggles the state."
       (progn
         (add-hook 'activate-mark-hook #'region-state--activate)
         (add-hook 'deactivate-mark-hook #'region-state--deactivate))
-    (add-hook 'activate-mark-hook #'region-state--activate)
-    (add-hook 'deactivate-mark-hook #'region-state--deactivate)))
+    (remove-hook 'activate-mark-hook #'region-state--activate)
+    (remove-hook 'deactivate-mark-hook #'region-state--deactivate)))
 
 (provide 'region-state)
 ;;; region-state.el ends here
