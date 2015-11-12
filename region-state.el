@@ -60,7 +60,8 @@ buffer-local wherever it is set."
   "Wrap of `count-lines'."
   (let ((lines (count-lines start end)))
     (if (= lines 1)
-        (if (<= (line-beginning-position) start end (line-end-position))
+        (if (and (<= (line-beginning-position) start)
+                 (<= end (line-end-position)))
             1 2)
       lines)))
 
