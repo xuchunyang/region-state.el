@@ -1,4 +1,4 @@
-* region-state [[https://travis-ci.org/xuchunyang/region-state.el][file:https://travis-ci.org/xuchunyang/helm-zhihu-daily.svg]]
+* region-state [[https://travis-ci.org/xuchunyang/region-state.el][file:https://travis-ci.org/xuchunyang/region-state.el.svg?branch=master]]
 
 ** Introduction
 
