@@ -56,6 +56,14 @@ buffer-local wherever it is set."
   "Return t if minibuffer window is selected."
   (minibuffer-window-active-p (selected-window)))
 
+(defun region-state--count-lines (start end)
+  "Wrap of `count-lines'."
+  (let ((lines (count-lines start end)))
+    (if (= lines 1)
+        (if (<= (line-beginning-position) start end (line-end-position))
+            1 2)
+      lines)))
+
 
 ;;; Customization
 (defgroup region-state nil
@@ -98,16 +106,15 @@ buffer-local wherever it is set."
                     region-state-rows
                     region-state-cols)
           (concat
-           ;; TODO: Maybe need some special care for the first selected line
            (when (> region-state-lines 1)
              (format "%d lines, " region-state-lines))
-           (when(> region-state-chars 0)
+           (when (> region-state-chars 0)
              (format "%d characters selected" region-state-chars))))))
 
 (defun region-state--update-1 (beg end)
   (if (not (bound-and-true-p rectangle-mark-mode))
       (let ((chars (- end beg))
-            (lines (count-lines beg end)))
+            (lines (region-state--count-lines beg end)))
         (setq region-state-chars chars
               region-state-lines lines))
     (let ((rows 0)
