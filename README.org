@@ -1,4 +1,4 @@
-* region-state [[https://travis-ci.org/xuchunyang/region-state.el][file:https://travis-ci.org/xuchunyang/region-state.el.svg?branch=master]]
+* region-state [[https://travis-ci.org/xuchunyang/region-state.el][file:https://travis-ci.org/xuchunyang/region-state.el.svg?branch=master]] [[http://melpa.org/#/region-state][file:http://melpa.org/packages/region-state-badge.svg]]
 
 ** Introduction
 
