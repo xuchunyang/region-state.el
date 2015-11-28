@@ -57,13 +57,15 @@ buffer-local wherever it is set."
   (minibuffer-window-active-p (selected-window)))
 
 (defun region-state--count-lines (start end)
-  "Wrap of `count-lines'."
-  (let ((lines (count-lines start end)))
-    (if (= lines 1)
-        (if (and (<= (line-beginning-position) start)
-                 (<= end (line-end-position)))
-            1 2)
-      lines)))
+  (save-excursion
+    (save-restriction
+      (narrow-to-region start end)
+      (goto-char (point-min))
+      (save-match-data
+        (let ((lines 1))
+          (while (re-search-forward "\n" nil t)
+            (setq lines (1+ lines)))
+          lines)))))
 
 
 ;;; Customization
