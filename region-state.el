@@ -56,17 +56,6 @@ buffer-local wherever it is set."
   "Return t if minibuffer window is selected."
   (minibuffer-window-active-p (selected-window)))
 
-(defun region-state--count-lines (start end)
-  (save-excursion
-    (save-restriction
-      (narrow-to-region start end)
-      (goto-char (point-min))
-      (save-match-data
-        (let ((lines 1))
-          (while (re-search-forward "\n" nil t)
-            (setq lines (1+ lines)))
-          lines)))))
-
 
 ;;; Customization
 (defgroup region-state nil
@@ -117,7 +106,7 @@ buffer-local wherever it is set."
 (defun region-state--update-1 (beg end)
   (if (not (bound-and-true-p rectangle-mark-mode))
       (let ((chars (- end beg))
-            (lines (region-state--count-lines beg end)))
+            (lines (count-lines beg end)))
         (setq region-state-chars chars
               region-state-lines lines))
     (let ((rows 0)
