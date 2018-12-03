@@ -1,8 +1,8 @@
 ;;; region-state.el --- Show the number of chars/lines or rows/columns in the region  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2015  Chunyang Xu
+;; Copyright (C) 2015, 2018  Chunyang Xu
 
-;; Author: Chunyang Xu <xuchunyang56@gmail.com>
+;; Author: Chunyang Xu <mail@xuchunyang.me>
 ;; URL: https://github.com/xuchunyang/region-state.el
 ;; Keywords: convenience
 ;; Version: 0.1
