@@ -12,4 +12,4 @@ before_install:
 
 script:
   - $EMACS --version
-  - make test
+  - make
